@@ -10,11 +10,42 @@
 ## Road Map
 
 [X] Create New Project
-[ ] Install Breeze
+[X] Install Breeze
 [ ] Install Dark Mode
     [ ] Install Dark Mode switcher button
         [ ] Logged Out View
         [ ] Authenticated View
+
+## Create New Project
+
+```sh
+composer create-project laravel/laravel laravel11-inertia-vue-engine
+```
+
+## Download and Install Breeze
+
+Download Laravel Breeze
+
+```sh
+composer require laravel/breeze --dev
+```
+
+Install Laravel Breeze
+
+```sh
+php artisan breeze:install
+```
+
+Selections:
+
+1. Which Breeze stack would you like to install?
+    - vue
+
+2. Would you like any optional features?
+    - dark, ssr
+
+3. Which testing framework do you prefer?
+    - 0
 
 ## About Laravel
 
