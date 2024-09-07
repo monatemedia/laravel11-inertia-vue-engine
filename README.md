@@ -7,6 +7,17 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## About
+
+Built with 
+- PHP 8.2
+- Laravel 11 with Starter Kit
+  - Inertia.js
+  - Vue.js
+- Tailwind CSS
+- Hero Icons
+- 
+
 ## Road Map
 
 [X] Create New Project
@@ -20,6 +31,17 @@
 
 ```sh
 composer create-project laravel/laravel laravel11-inertia-vue-engine
+```
+
+Change into Directory
+
+```sh
+cd laravel11-vue-inertia-dynamo
+```
+
+Open with VS Code
+```sh
+code .
 ```
 
 ## Download and Install Breeze
@@ -46,6 +68,245 @@ Selections:
 
 3. Which testing framework do you prefer?
     - 0
+
+## Run Project In Terminal
+
+Run Artisan Serve in terminal
+
+```sh
+php artisan serve
+```
+
+Run NPM Run in a second terminal
+
+```sh
+npm run dev
+```
+
+Run PHP Artisan Tinker in third terminal
+
+```sh
+php artisan tinker
+```
+
+Run open terminal in fourth terminal
+
+## Enable Dark Mode
+
+1. Edit /tailwind.config.js
+
+```sh
+export default {
+    darkMode: 'class', //Add this line 
+    ...
+};
+``` 
+
+2. Install Hero Icons
+
+```sh
+npm i @heroicons/vue --include=dev
+```
+
+[Hero Icons](https://heroicons.com/) can be imported and used as components
+
+3. Create /resources/js/Components/DarkModeToggle.vue component with this code:
+```sh
+<script setup>
+import { ref } from 'vue';
+import { SunIcon } from '@heroicons/vue/24/outline'; // Import icons
+import { MoonIcon } from '@heroicons/vue/24/solid'; // Import icons
+
+// Check for stored theme preference or default to dark mode
+const savedTheme = localStorage.getItem('color-theme');
+const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+const isDarkMode = ref(savedTheme === 'dark' || (!savedTheme && prefersDarkScheme));
+
+const toggleDarkMode = () => {
+  if (isDarkMode.value) {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('color-theme', 'light');
+  } else {
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('color-theme', 'dark');
+  }
+  isDarkMode.value = !isDarkMode.value;
+};
+</script>
+
+<template>
+  <button
+    @click="toggleDarkMode"
+    class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5"
+  >
+    <MoonIcon v-if="!isDarkMode" class="w-5 h-5" />
+    <SunIcon v-if="isDarkMode" class="w-5 h-5" />
+  </button>
+</template>
+```
+
+4. Edit /resources/js/Layouts/AuthenticatedLayout.vue
+
+- Import DarkModeToggle component, Dark Mode Toggle Script and use `<DarkModeToggle />`
+
+```sh
+<script setup>
+
+...
+import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkModeToggle component
+...
+
+...
+// Dark Mode Toggle Script
+const toggleTheme = () => {
+    const html = document.documentElement;
+    if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    } else {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    }
+};
+
+// Check for stored theme preference on page load
+if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+} else {
+    document.documentElement.classList.remove('dark');
+}
+</script>
+...
+
+...
+<div class="hidden sm:flex sm:items-center sm:ms-6">
+    <!-- Dark Mode Toggle -->
+    <DarkModeToggle />
+    <!-- Settings Dropdown -->
+    <div class="ms-3 relative">
+        <Dropdown align="right" width="48">
+            <template #trigger>
+...
+
+...
+<!-- Hamburger -->
+<div class="-me-2 flex items-center sm:hidden">
+    <!-- Dark Mode Toggle -->
+    <DarkModeToggle />
+    <button>
+...
+```
+
+5. Edit /resources/js/Pages/Welcome.vue
+
+- Import DarkModeToggle component, Dark Mode Toggle Script and use `<DarkModeToggle />`
+
+```sh
+<script setup>
+
+...
+import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkModeToggle component
+...
+
+...
+// Dark Mode Toggle Script
+const toggleTheme = () => {
+    const html = document.documentElement;
+    if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    } else {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    }
+};
+
+// Check for stored theme preference on page load
+if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+} else {
+    document.documentElement.classList.remove('dark');
+}
+</script>
+...
+
+...
+<template v-else>
+    <!-- Dark Mode Toggle -->
+    <DarkModeToggle />
+    <Link
+        :href="route('login')"
+        class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+    >
+...
+```
+
+## Make Models and Migrations
+
+Make Package Model
+php artisan make:model Package -m
+
+Make Transaction Model
+php artisan make:model Transaction -m
+
+Make Feature Model
+php artisan make:model Feature -m
+
+Make UsedFeature Model
+php artisan make:model UsedFeature -m
+
+## Create User Observer
+
+Make user observer
+php artisan make:observer UserObserver
+
+## Run Migrations with Seeders
+
+Rerun Migrations and Seed Database
+php artisan migrate:fresh --seed
+
+## Artisan Tinker Database Queries
+
+Enter Tinker
+php artisan tinker
+
+Check DB Connection
+DB::connection()->getDatabaseName()
+Should return = "C:\xampp\htdocs\laravel11-vue-inertia-dynamo\database\database.sqlite"
+
+Get First User Data
+User::first()
+
+Get All User Data
+User::all()
+
+Get All Features
+\App\Models\Feature::all()
+
+## Make A Controller
+
+Make Controller One
+php artisan make:controller Feature1Controller
+
+Make Controller Two
+php artisan make:controller Feature2Controller
+
+## Make A Resource
+
+Resource controllers are important when using a front-end framework like vue or react. The Resource controller only passes the necessary data for the front-end to do it's work. Passing the data directly from the Controller will expose all data in the controller which would to vulnerabilities.
+
+Make FeatureResource
+php artisan make:resource FeatureResource
+
+## Create Feature 1 Index Component
+
+Create the component in /resources/js/Pages/Feature1/Index.vue
+
+## Add Custom Feature Vue Components
+
+Add Feature.vue component in /resources/js/Components/Feature.vue to use in all new Feature components you're gonna add.That's gonna be a generic component that display's the feature name, number of credits required for the specific feature, and this feature will also lock when the user has insufficient credits to use that feature.
+
 
 ## About Laravel
 

@@ -1,5 +1,25 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkModeToggle component
+
+// Dark Mode Toggle Script
+const toggleTheme = () => {
+    const html = document.documentElement;
+    if (html.classList.contains('dark')) {
+        html.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    } else {
+        html.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    }
+};
+
+// Check for stored theme preference on page load
+if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+} else {
+    document.documentElement.classList.remove('dark');
+}
 
 defineProps({
     canLogin: {
@@ -62,6 +82,8 @@ function handleImageError() {
                         </Link>
 
                         <template v-else>
+                            <!-- Dark Mode Toggle -->
+                            <DarkModeToggle />
                             <Link
                                 :href="route('login')"
                                 class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
