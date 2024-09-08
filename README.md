@@ -11,12 +11,12 @@
 
 Built with 
 - PHP 8.2
-- Laravel 11 with Starter Kit
-  - Inertia.js
-  - Vue.js
-- Tailwind CSS
-- Hero Icons
-- 
+  - Laravel 11 with Breeze Starter Kit
+    - Inertia.js
+      - Vue.js
+        - Tailwind CSS
+        - Hero Icons
+- Node.js
 
 ## Road Map
 
@@ -91,7 +91,7 @@ php artisan tinker
 
 Run open terminal in fourth terminal
 
-## Enable Dark Mode
+## Build Dark Mode Component
 
 1. Edit /tailwind.config.js
 
@@ -111,24 +111,42 @@ npm i @heroicons/vue --include=dev
 [Hero Icons](https://heroicons.com/) can be imported and used as components
 
 3. Create /resources/js/Components/DarkModeToggle.vue component with this code:
+
 ```sh
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { SunIcon } from '@heroicons/vue/24/outline'; // Import icons
 import { MoonIcon } from '@heroicons/vue/24/solid'; // Import icons
 
-const isDarkMode = ref(document.documentElement.classList.contains('dark'));
+// Reactive variable to track if dark mode is enabled
+const isDarkMode = ref(false);
 
+// Function to toggle dark mode
 const toggleDarkMode = () => {
+  const html = document.documentElement;
+
   if (isDarkMode.value) {
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('color-theme', 'light');
+    html.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
   } else {
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('color-theme', 'dark');
+    html.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
   }
+
+  // Toggle the dark mode state
   isDarkMode.value = !isDarkMode.value;
 };
+
+// Check for stored theme preference on page load
+onMounted(() => {
+  if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+    isDarkMode.value = true;
+  } else {
+    document.documentElement.classList.remove('dark');
+    isDarkMode.value = false;
+  }
+});
 </script>
 
 <template>
@@ -144,35 +162,13 @@ const toggleDarkMode = () => {
 
 4. Edit /resources/js/Layouts/AuthenticatedLayout.vue
 
-- Import DarkModeToggle component, Dark Mode Toggle Script and use `<DarkModeToggle />`
+- Import DarkModeToggle component, Dark Mode Toggle Script and place `<DarkModeToggle />` component anywhere in your template where you want to use it.
 
 ```sh
 <script setup>
 
 ...
 import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkModeToggle component
-...
-
-...
-// Dark Mode Toggle Script
-const toggleTheme = () => {
-    const html = document.documentElement;
-    if (html.classList.contains('dark')) {
-        html.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-    } else {
-        html.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    }
-};
-
-// Check for stored theme preference on page load
-if (localStorage.getItem('theme') === 'dark') {
-    document.documentElement.classList.add('dark');
-} else {
-    document.documentElement.classList.remove('dark');
-}
-</script>
 ...
 
 ...
@@ -203,28 +199,6 @@ if (localStorage.getItem('theme') === 'dark') {
 
 ...
 import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkModeToggle component
-...
-
-...
-// Dark Mode Toggle Script
-const toggleTheme = () => {
-    const html = document.documentElement;
-    if (html.classList.contains('dark')) {
-        html.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-    } else {
-        html.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    }
-};
-
-// Check for stored theme preference on page load
-if (localStorage.getItem('theme') === 'dark') {
-    document.documentElement.classList.add('dark');
-} else {
-    document.documentElement.classList.remove('dark');
-}
-</script>
 ...
 
 ...

@@ -1,20 +1,37 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { SunIcon } from '@heroicons/vue/24/outline'; // Import icons
 import { MoonIcon } from '@heroicons/vue/24/solid'; // Import icons
 
-const isDarkMode = ref(document.documentElement.classList.contains('dark'));
+// Reactive variable to track if dark mode is enabled
+const isDarkMode = ref(false);
 
+// Function to toggle dark mode
 const toggleDarkMode = () => {
+  const html = document.documentElement;
+
   if (isDarkMode.value) {
-    document.documentElement.classList.remove('dark');
-    localStorage.setItem('color-theme', 'light');
+    html.classList.remove('dark');
+    localStorage.setItem('theme', 'light');
   } else {
-    document.documentElement.classList.add('dark');
-    localStorage.setItem('color-theme', 'dark');
+    html.classList.add('dark');
+    localStorage.setItem('theme', 'dark');
   }
+
+  // Toggle the dark mode state
   isDarkMode.value = !isDarkMode.value;
 };
+
+// Check for stored theme preference on page load
+onMounted(() => {
+  if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.classList.add('dark');
+    isDarkMode.value = true;
+  } else {
+    document.documentElement.classList.remove('dark');
+    isDarkMode.value = false;
+  }
+});
 </script>
 
 <template>

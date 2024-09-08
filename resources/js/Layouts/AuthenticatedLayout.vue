@@ -9,25 +9,6 @@ import { Link } from '@inertiajs/vue3';
 import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkModeToggle component
 
 const showingNavigationDropdown = ref(false);
-
-// Dark Mode Toggle Script
-const toggleTheme = () => {
-    const html = document.documentElement;
-    if (html.classList.contains('dark')) {
-        html.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-    } else {
-        html.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    }
-};
-
-// Check for stored theme preference on page load
-if (localStorage.getItem('theme') === 'dark') {
-    document.documentElement.classList.add('dark');
-} else {
-    document.documentElement.classList.remove('dark');
-}
 </script>
 
 <template>
