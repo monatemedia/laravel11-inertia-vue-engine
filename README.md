@@ -455,7 +455,45 @@ public function rules(): array
 ...
 ```
 
-10. 
+10. Edit /app/Http/Requests/RegisteredUserRequest.php to format the phone number to an international format before saving it to the database
+
+```sh
+...
+    public function rules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:users',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'country' => 'required|string|max:255', // Country validation
+            'phone_number' => 'required|phone:' . $this->input('country'), // Validate phone based on selected country
+        ];
+    }
+...
+
+...
+    /**
+     * Format phone number after validation.
+     *
+     * @param string|null $key
+     * @param mixed|null $default
+     * @return array
+     */
+    public function validated($key = null, $default = null): array
+    {
+        $validated = parent::validated($key, $default);
+
+        // Format phone number to E.164 format if phone_number exists
+        if (isset($validated['phone_number']) && isset($validated['country'])) {
+            $validated['phone_number'] = phone($validated['phone_number'], $validated['country'])->formatE164();
+        }
+
+        return $validated;
+    }
+...
+```
+
+
 
 ## Make Models and Migrations
 
