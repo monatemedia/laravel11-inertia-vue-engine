@@ -13,19 +13,25 @@ Built with
 - PHP 8.2
   - Laravel 11 with Breeze Starter Kit
     - Inertia.js
-      - Vue.js
+      - Vue.js v3
         - Tailwind CSS
         - Hero Icons
+  - Composer
 - Node.js
+  - NPM
 
 ## Road Map
 
 [X] Create New Project
 [X] Install Breeze
-[ ] Install Dark Mode
-    [ ] Install Dark Mode switcher button
-        [ ] Logged Out View
-        [ ] Authenticated View
+[X] Run Project in Terminal
+[X] Install Dark Mode
+    [X] Install Dark Mode switcher button
+        [X] Pages
+        [X] Authenticated Layout
+[ ] Extend User Model
+    [ ] Accept Country on Registration
+    [ ] Accept Phone Number on Registration 
 
 ## Create New Project
 
@@ -160,7 +166,29 @@ onMounted(() => {
 </template>
 ```
 
-4. Edit /resources/js/Layouts/AuthenticatedLayout.vue
+4. Edit /resources/js/Pages/Welcome.vue
+
+- Import DarkModeToggle component, Dark Mode Toggle Script and use `<DarkModeToggle />`
+
+```sh
+<script setup>
+
+...
+import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkModeToggle component
+...
+
+...
+<template v-else>
+    <!-- Dark Mode Toggle -->
+    <DarkModeToggle />
+    <Link
+        :href="route('login')"
+        class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+    >
+...
+```
+
+5. Edit /resources/js/Layouts/AuthenticatedLayout.vue
 
 - Import DarkModeToggle component, Dark Mode Toggle Script and place `<DarkModeToggle />` component anywhere in your template where you want to use it.
 
@@ -190,27 +218,121 @@ import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkMode
 ...
 ```
 
-5. Edit /resources/js/Pages/Welcome.vue
+## Extend User Model To Accept Country And Phone Number
 
-- Import DarkModeToggle component, Dark Mode Toggle Script and use `<DarkModeToggle />`
+1. Create migration to Add Country and Phone Number Fields
+
+```sh
+php artisan make:migration add_country_and_phone_number_to_users_table --table=users
+```
+
+Then in the migration file, add these fields:
+
+```sh
+...
+Schema::table('users', function (Blueprint $table) {
+            // Add country and phone_number columns
+            $table->string('country')->after('email')->nullable();
+            $table->string('phone_number')->after('country')->nullable();
+        });
+...
+
+...
+Schema::table('users', function (Blueprint $table) {
+            // Drop country and phone_number columns
+            $table->dropColumn('country');
+            $table->dropColumn('phone_number');
+        });
+...
+```
+
+Once you've added the changes, run:
+
+```sh
+php artisan migrate
+```
+
+2. Updating the `User` Model to handle additional fields
+
+Edit /app/Models/User.php
+
+```sh
+protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'country',
+        'phone_number',
+    ];
+```
+
+3. Updating the Registration Form
+
+Edit /resources/js/Pages/Auth/Register.vue 
 
 ```sh
 <script setup>
-
-...
-import DarkModeToggle from '@/Components/DarkModeToggle.vue'; // Import DarkModeToggle component
+import { ref, onMounted } from 'vue';
 ...
 
 ...
-<template v-else>
-    <!-- Dark Mode Toggle -->
-    <DarkModeToggle />
-    <Link
-        :href="route('login')"
-        class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
-    >
+const form = useForm({
+    name: '',
+    email: '',
+    password: '',
+    password_confirmation: '',
+    country: '',
+    phone_number: '',
+});
+...
+
+...
+// initialise country list
+const countries = ref([]);
+
+// Get countries via API
+onMounted(() => {
+    axios.get('https://restcountries.com/v3.1/all')
+        .then(response => {
+            countries.value = response.data.map(country => ({
+                name: country.name.common,
+                code: country.cca2,
+            }));
+        });
+});
+</script>
 ...
 ```
+
+4. Edit app/Http/Controllers/Auth/RegisteredUserController.php
+
+```sh
+...
+$request->validate([
+    'name' => 'required|string|max:255',
+    'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
+    'password' => ['required', 'confirmed', Rules\Password::defaults()],
+    'country' => 'required|string|max:255', // Country is required
+    'phone_number' => 'required|string|min:10|max:15', // Phone number validation
+]);
+
+$user = User::create([
+    'name' => $request->name,
+    'email' => $request->email,
+    'password' => Hash::make($request->password),
+    'country' => $request->country, // Store country
+    'phone_number' => $request->phone_number, // Store phone number
+]);
+...
+```
+
+5. Make RegisteredUserRequest Form Request
+
+```sh
+php artisan make:request RegisteredUserRequest
+```
+
+
 
 ## Make Models and Migrations
 

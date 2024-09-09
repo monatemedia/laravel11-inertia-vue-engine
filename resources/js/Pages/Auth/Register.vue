@@ -1,4 +1,6 @@
 <script setup>
+import { ref, onMounted, watch } from 'vue';
+import axios from 'axios';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
@@ -11,6 +13,8 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    country: '',
+    phone_number: '',
 });
 
 const submit = () => {
@@ -18,6 +22,31 @@ const submit = () => {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
+
+// initialise country list
+const countries = ref([]);
+
+// Get countries via API
+onMounted(() => {
+    axios.get('https://restcountries.com/v3.1/all')
+        .then(response => {
+            countries.value = response.data
+                .map(country => ({
+                    name: country.name.common,
+                    code: country.cca2,
+                    dialCode: country.idd.root + (country.idd.suffixes ? country.idd.suffixes[0] : ''), // Add dial code
+                }))
+                .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+        });
+});
+
+// Watch for changes in country selection to auto-prefix phone number with the country dial code
+watch(() => form.country, (newCountryCode) => {
+    const selectedCountry = countries.value.find(country => country.code === newCountryCode);
+    if (selectedCountry && !form.phone_number.startsWith(`+${selectedCountry.dialCode}`)) {
+        form.phone_number = `${selectedCountry.dialCode} `;
+    }
+});
 </script>
 
 <template>
@@ -25,6 +54,7 @@ const submit = () => {
         <Head title="Register" />
 
         <form @submit.prevent="submit">
+            <!-- Name Input -->
             <div>
                 <InputLabel for="name" value="Name" />
 
@@ -33,7 +63,6 @@ const submit = () => {
                     type="text"
                     class="mt-1 block w-full"
                     v-model="form.name"
-                    required
                     autofocus
                     autocomplete="name"
                 />
@@ -41,6 +70,7 @@ const submit = () => {
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
+            <!-- Email Input -->
             <div class="mt-4">
                 <InputLabel for="email" value="Email" />
 
@@ -49,13 +79,41 @@ const submit = () => {
                     type="email"
                     class="mt-1 block w-full"
                     v-model="form.email"
-                    required
                     autocomplete="username"
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
+            <!-- Country Selection Dropdown -->
+            <div class="mt-4">
+                <InputLabel for="country" value="Country" />
+                <select
+                    id="country"
+                    class="mt-1 block w-full border-gray-300 dark:bg-gray-800 dark:text-white rounded-md"
+                    v-model="form.country"
+                >
+                    <option value="">Select your country</option>
+                    <option v-for="country in countries" :key="country.code" :value="country.code">
+                        {{ country.name }}
+                    </option>
+                </select>
+                <InputError class="mt-2" :message="form.errors.country" />
+            </div>
+
+            <!-- Phone Number Input -->
+            <div class="mt-4">
+                <InputLabel for="phone_number" value="Phone Number" />
+                <TextInput
+                    id="phone_number"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.phone_number"
+                />
+                <InputError class="mt-2" :message="form.errors.phone_number" />
+            </div>
+
+            <!-- Password Input -->
             <div class="mt-4">
                 <InputLabel for="password" value="Password" />
 
@@ -64,13 +122,13 @@ const submit = () => {
                     type="password"
                     class="mt-1 block w-full"
                     v-model="form.password"
-                    required
                     autocomplete="new-password"
                 />
 
                 <InputError class="mt-2" :message="form.errors.password" />
             </div>
 
+            <!-- Password Confirmation Input -->
             <div class="mt-4">
                 <InputLabel for="password_confirmation" value="Confirm Password" />
 
@@ -79,7 +137,6 @@ const submit = () => {
                     type="password"
                     class="mt-1 block w-full"
                     v-model="form.password_confirmation"
-                    required
                     autocomplete="new-password"
                 />
 
