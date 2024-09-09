@@ -27,7 +27,7 @@ class RegisteredUserRequest extends FormRequest
             'email' => 'required|string|lowercase|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'country' => 'required|string|max:255', // Country validation
-            'phone_number' => 'required|string|min:10|max:15', // Phone number validation
+            'phone_number' => 'required|phone:AUTO', // Phone number validation
         ];
     }
 
@@ -40,9 +40,7 @@ class RegisteredUserRequest extends FormRequest
     {
         return [
             'country.required' => 'Please select your country.',
-            'phone_number.required' => 'Phone number is required.',
-            'phone_number.min' => 'The phone number must be at least 10 digits long.',
-            'phone_number.max' => 'The phone number must not exceed 15 digits.',
+            'phone' => 'The :attribute field contains an invalid number.',
         ];
     }
 }

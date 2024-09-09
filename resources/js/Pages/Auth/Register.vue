@@ -26,8 +26,8 @@ const submit = () => {
 // initialise country list
 const countries = ref([]);
 
-// Get countries via API
 onMounted(() => {
+    // Get countries via API
     axios.get('https://restcountries.com/v3.1/all')
         .then(response => {
             countries.value = response.data

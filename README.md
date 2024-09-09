@@ -326,13 +326,136 @@ $user = User::create([
 ...
 ```
 
-5. Make RegisteredUserRequest Form Request
+5. Create RegisteredUserRequest Form Request
 
 ```sh
 php artisan make:request RegisteredUserRequest
 ```
 
+Edit /app/Http/Requests/RegisteredUserRequest.php
 
+```sh
+...
+use Illuminate\Validation\Rules;
+...
+
+...
+class RegisteredUserRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|lowercase|email|max:255|unique:users',
+            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'country' => 'required|string|max:255', // Country validation
+            'phone_number' => 'required|string|min:10|max:15', // Phone number validation
+        ];
+    }
+
+    /**
+     * Custom error messages for validation.
+     *
+     * @return array
+     */
+    public function messages(): array
+    {
+        return [
+            'country.required' => 'Please select your country.',
+            'phone_number.required' => 'Phone number is required.',
+            'phone_number.min' => 'The phone number must be at least 10 digits long.',
+            'phone_number.max' => 'The phone number must not exceed 15 digits.',
+        ];
+    }
+}
+```
+
+6. Edit /app/Http/Controllers/Auth/RegisteredUserController.php
+
+```sh
+...
+use App\Http\Requests\RegisteredUserRequest; // Import the request
+...
+
+...
+// Use the validated data directly
+        $user = User::create([
+            'name' => $request->validated()['name'],
+            'email' => $request->validated()['email'],
+            'password' => Hash::make($request->validated()['password']),
+            'country' => $request->validated()['country'], // Store country
+            'phone_number' => $request->validated()['phone_number'], // Store phone number
+        ]);
+...
+```
+
+7. Edit /resources/js/Pages/Auth/Register.vue
+
+```sh
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+...
+
+...
+// Watch for changes in country selection to auto-prefix phone number with the country dial code
+watch(() => form.country, (newCountryCode) => {
+    const selectedCountry = countries.value.find(country => country.code === newCountryCode);
+    if (selectedCountry && !form.phone_number.startsWith(`+${selectedCountry.dialCode}`)) {
+        form.phone_number = `${selectedCountry.dialCode} `;
+    }
+});
+</script>
+```
+
+Remove all `required` methods from `TextInput` fields to prevent the in-browser form validation from running, as our validation will be handled by Laravel.
+
+8. Use Propaganistas/Laravel-Phone
+
+```sh
+composer require propaganistas/laravel-phone
+```
+
+9. Edit /app/Http/Requests/RegisteredUserRequest.php phone validation rule
+
+```sh
+...
+public function rules(): array
+{
+    return [
+        'name' => 'required|string|max:255',
+        'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
+        'password' => ['required', 'confirmed', Rules\Password::defaults()],
+        'country' => 'required|string|max:255',
+        'phone_number' => 'required|phone:AUTO', // Validate phone number
+    ];
+}
+...
+
+...
+    public function messages(): array
+        {
+            return [
+                'country.required' => 'Please select your country.',
+                'phone' => 'The :attribute field contains an invalid number.',
+            ];
+        }
+...
+```
+
+10. 
 
 ## Make Models and Migrations
 
