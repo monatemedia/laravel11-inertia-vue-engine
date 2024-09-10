@@ -1,4 +1,6 @@
 <script setup>
+import { ref, onMounted, watch } from 'vue';
+import axios from 'axios';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
@@ -16,10 +18,39 @@ defineProps({
 
 const user = usePage().props.auth.user;
 
+// Define the form with additional fields
 const form = useForm({
     name: user.name,
     email: user.email,
+    country: user.country || '', // Assuming country is available on the user object
+    phone_number: user.phone_number || '', // Assuming phone_number is available on the user object
 });
+
+// initialise country list
+const countries = ref([]);
+
+onMounted(() => {
+    // Get countries via API
+    axios.get('https://restcountries.com/v3.1/all')
+        .then(response => {
+            countries.value = response.data
+                .map(country => ({
+                    name: country.name.common,
+                    code: country.cca2,
+                    dialCode: country.idd.root + (country.idd.suffixes ? country.idd.suffixes[0] : ''), // Add dial code
+                }))
+                .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+        });
+
+    // Watch for changes in country selection to auto-prefix phone number with the country dial code
+    watch(() => form.country, (newCountryCode) => {
+        const selectedCountry = countries.value.find(country => country.code === newCountryCode);
+        if (selectedCountry && !form.phone_number.startsWith(`+${selectedCountry.dialCode}`)) {
+            form.phone_number = `${selectedCountry.dialCode} `;
+        }
+    });
+});
+
 </script>
 
 <template>
@@ -33,6 +64,7 @@ const form = useForm({
         </header>
 
         <form @submit.prevent="form.patch(route('profile.update'))" class="mt-6 space-y-6">
+            <!-- Name Input -->
             <div>
                 <InputLabel for="name" value="Name" />
 
@@ -49,6 +81,7 @@ const form = useForm({
                 <InputError class="mt-2" :message="form.errors.name" />
             </div>
 
+            <!-- Email Input -->
             <div>
                 <InputLabel for="email" value="Email" />
 
@@ -64,6 +97,35 @@ const form = useForm({
                 <InputError class="mt-2" :message="form.errors.email" />
             </div>
 
+            <!-- Country Selection Dropdown -->
+            <div>
+                <InputLabel for="country" value="Country" />
+                <select
+                    id="country"
+                    class="mt-1 block w-full border-gray-300 dark:bg-gray-800 dark:text-white rounded-md"
+                    v-model="form.country"
+                >
+                    <option value="">Select your country</option>
+                    <option v-for="country in countries" :key="country.code" :value="country.code">
+                        {{ country.name }}
+                    </option>
+                </select>
+                <InputError class="mt-2" :message="form.errors.country" />
+            </div>
+
+            <!-- Phone Number Input -->
+            <div>
+                <InputLabel for="phone_number" value="Phone Number" />
+                <TextInput
+                    id="phone_number"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.phone_number"
+                />
+                <InputError class="mt-2" :message="form.errors.phone_number" />
+            </div>
+
+            <!-- Email Verification Status -->
             <div v-if="mustVerifyEmail && user.email_verified_at === null">
                 <p class="text-sm mt-2 text-gray-800 dark:text-gray-200">
                     Your email address is unverified.

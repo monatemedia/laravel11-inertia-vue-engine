@@ -493,6 +493,56 @@ public function rules(): array
 ...
 ```
 
+## Extend User Profile To Accept Country And Phone Number
+
+1. Edit /resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.vue
+
+```sh
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import axios from 'axios';
+...
+```
+
+Replace this code in the `script` block
+
+```sh
+...
+const form = useForm({
+    name: user.name,
+    email: user.email,
+});
+</script>
+...
+```
+
+With this code
+
+```sh
+// Define the form with additional fields
+const form = useForm({
+    name: user.name,
+    email: user.email,
+    country: user.country || '', // Assuming country is available on the user object
+    phone_number: user.phone_number || '', // Assuming phone_number is available on the user object
+});
+
+// Fetch country list for dropdown
+const countries = ref([]);
+onMounted(() => {
+    axios.get('https://restcountries.com/v3.1/all')
+        .then(response => {
+            countries.value = response.data
+                .map(country => ({
+                    name: country.name.common,
+                    code: country.cca2,
+                }))
+                .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
+        });
+});
+</script>
+```
+
 
 
 ## Make Models and Migrations
