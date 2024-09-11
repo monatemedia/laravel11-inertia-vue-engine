@@ -6,6 +6,8 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
+import { parsePhoneNumberFromString } from 'libphonenumber-js'; // Import the libphonenumber-js library
+
 
 defineProps({
     mustVerifyEmail: {
@@ -23,8 +25,17 @@ const form = useForm({
     name: user.name,
     email: user.email,
     country: user.country || '', // Assuming country is available on the user object
-    phone_number: user.phone_number || '', // Assuming phone_number is available on the user object
+    phone_number: formatPhoneNumber(user.phone_number, user.country) || '', // Format E.164 to E.123
 });
+
+// Function to format the phone number from E.164 to E.123 format
+function formatPhoneNumber(phoneNumber, countryCode) {
+    const parsedPhone = parsePhoneNumberFromString(phoneNumber, countryCode);
+    if (parsedPhone) {
+        return parsedPhone.formatInternational(); // Format to E.123 international format
+    }
+    return phoneNumber; // Return the raw phone number if parsing fails
+}
 
 // initialise country list
 const countries = ref([]);
