@@ -9,18 +9,12 @@ import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { parsePhoneNumberFromString } from 'libphonenumber-js'; // Import the libphonenumber-js library
 
 
-defineProps({
-    mustVerifyEmail: {
-        type: Boolean,
-    },
-    status: {
-        type: String,
-    },
-});
+const page = usePage();
+const user = page.props.auth.user;
+const mustVerifyEmail = page.props.mustVerifyEmail;
+const status = page.props.status;
 
-const user = usePage().props.auth.user;
-
-// Define the form with additional fields
+// Define the form
 const form = useForm({
     name: user.name,
     email: user.email,
@@ -62,6 +56,12 @@ onMounted(() => {
     });
 });
 
+// Custom form submission method
+const submitForm = () => {
+    form.patch(route('profile.update'), {
+        preserveScroll: true, // Prevent scrolling to the top after form submission
+    });
+};
 </script>
 
 <template>
@@ -74,7 +74,7 @@ onMounted(() => {
             </p>
         </header>
 
-        <form @submit.prevent="form.patch(route('profile.update'))" class="mt-6 space-y-6">
+        <form @submit.prevent="submitForm" class="mt-6 space-y-6">
             <!-- Name Input -->
             <div>
                 <InputLabel for="name" value="Name" />

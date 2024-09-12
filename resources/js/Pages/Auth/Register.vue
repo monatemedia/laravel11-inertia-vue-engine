@@ -8,6 +8,7 @@ import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
+// Initialize form
 const form = useForm({
     name: '',
     email: '',
@@ -16,12 +17,6 @@ const form = useForm({
     country: '',
     phone_number: '',
 });
-
-const submit = () => {
-    form.post(route('register'), {
-        onFinish: () => form.reset('password', 'password_confirmation'),
-    });
-};
 
 // initialise country list
 const countries = ref([]);
@@ -47,6 +42,14 @@ watch(() => form.country, (newCountryCode) => {
         form.phone_number = `${selectedCountry.dialCode} `;
     }
 });
+
+// Form submission method for registration
+const submit = () => {
+    form.post(route('register'), {
+        preserveScroll: true, // Prevent scrolling to the top after form submission
+        onFinish: () => form.reset('password', 'password_confirmation'), // Reset password fields on completion
+    });
+};
 </script>
 
 <template>
