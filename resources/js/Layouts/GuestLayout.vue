@@ -1,6 +1,17 @@
 <script setup>
+import { onMounted } from 'vue';
 import ApplicationLogo from '@/Components/ApplicationLogo.vue';
 import { Link } from '@inertiajs/vue3';
+
+
+onMounted(() => {
+    // Check for theme on mount and apply the class accordingly
+    if (localStorage.getItem('theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+    }
+});
 </script>
 
 <template>
